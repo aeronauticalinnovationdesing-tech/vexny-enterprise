@@ -2,7 +2,6 @@
   "name": "vexny-enterprise",
   "version": "1.0.0",
   "private": true,
-  "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",
     "dev": "cd backend && npm run dev"
