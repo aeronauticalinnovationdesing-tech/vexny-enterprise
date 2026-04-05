@@ -1,14 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const pool = require('../src/config/database');
-
-// Import routes
-const pilotRoutes = require('../src/routes/pilots');
-const droneRoutes = require('../src/routes/drones');
-const flightRoutes = require('../src/routes/flights');
-const weatherRoutes = require('../src/routes/weather');
-const airspaceRoutes = require('../src/routes/airspace');
 
 const app = express();
 
@@ -27,8 +19,9 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'Server is running', 
-    timestamp: new Date(),
-    environment: process.env.NODE_ENV 
+    message: 'Drone Pilot API is healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'production'
   });
 });
 
@@ -37,9 +30,11 @@ app.get('/api', (req, res) => {
   res.status(200).json({ 
     message: 'Drone Pilot API',
     version: '1.0.0',
-    environment: process.env.NODE_ENV,
+    status: 'running',
+    environment: process.env.NODE_ENV || 'production',
     endpoints: {
-      auth: '/api/pilots',
+      health: '/health',
+      pilots: '/api/pilots',
       drones: '/api/drones',
       flights: '/api/flights',
       weather: '/api/weather',
@@ -48,12 +43,30 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Routes
-app.use('/api/pilots', pilotRoutes);
-app.use('/api/drones', droneRoutes);
-app.use('/api/flights', flightRoutes);
-app.use('/api/weather', weatherRoutes);
-app.use('/api/airspace', airspaceRoutes);
+// Mock endpoints - comentados hasta que BD esté configurada
+app.get('/api/pilots', (req, res) => {
+  res.json({ 
+    message: 'Pilots endpoint',
+    note: 'Database configuration required',
+    setupGuide: 'https://github.com/aeronauticalinnovationdesing-tech/vexny-enterprise/blob/main/backend/DEPLOY_VERCEL.md'
+  });
+});
+
+app.get('/api/drones', (req, res) => {
+  res.json({ message: 'Drones endpoint' });
+});
+
+app.get('/api/flights', (req, res) => {
+  res.json({ message: 'Flights endpoint' });
+});
+
+app.get('/api/weather/:lat/:lon', (req, res) => {
+  res.json({ message: 'Weather endpoint' });
+});
+
+app.get('/api/airspace/restrictions/:lat/:lon', (req, res) => {
+  res.json({ message: 'Airspace endpoint' });
+});
 
 // 404 Handler
 app.use((req, res) => {
@@ -62,13 +75,13 @@ app.use((req, res) => {
     path: req.path,
     method: req.method,
     availableEndpoints: [
-      '/api',
       '/health',
+      '/api',
       '/api/pilots',
       '/api/drones',
       '/api/flights',
-      '/api/weather',
-      '/api/airspace'
+      '/api/weather/:lat/:lon',
+      '/api/airspace/restrictions/:lat/:lon'
     ]
   });
 });
@@ -81,18 +94,5 @@ app.use((err, req, res, next) => {
     message: process.env.NODE_ENV === 'development' ? err.message : 'An error occurred'
   });
 });
-
-// Database connection test (solo si DB está configurada)
-if (process.env.DB_HOST) {
-  pool.query('SELECT NOW()', (err, result) => {
-    if (err) {
-      console.warn('⚠️ Database not connected:', err.message);
-    } else {
-      console.log('✅ Database connected');
-    }
-  });
-} else {
-  console.log('⚠️ Database not configured - using mock data only');
-}
 
 module.exports = app;
