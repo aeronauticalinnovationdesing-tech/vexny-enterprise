@@ -1,0 +1,13 @@
+{
+  "name": "vexny-enterprise",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@9.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "cd backend && npm run dev"
+  }
+}
